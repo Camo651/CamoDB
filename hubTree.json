@@ -1,0 +1,25 @@
+{
+    "exampleDatabase":{
+        "collection1":[
+            "entry1",
+            "entry2"
+        ],
+        "collection2":[
+            "entry1",
+            "entry3"
+        ]
+    },
+    "exampleDatabase2":{
+        "collection1":[
+            "entry1",
+            "entry2",
+            "entry3"
+        ],
+        "collection2":[
+            "entry1"
+        ],
+        "collection3":[
+            "entry1"
+        ]
+    }
+}

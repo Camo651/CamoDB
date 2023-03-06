@@ -1,0 +1,14 @@
+# Remove the .php tag
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^(.*)$ $1.php [NC,L] 
+
+# Route error codes to the error page
+ErrorDocument 404 /Errors/err404.php
+ErrorDocument 403 /Errors/err403.php
+ErrorDocument 500 /Errors/err500.php
+
+# Check that this machine is not the host server, then block access to txt and json files
+RewriteCond %{HTTP_HOST}@@%{HTTP_REFERER} !^([^@]*)@@https?://\1/.*
+RewriteRule \.(txt|json?)$ - [F]
