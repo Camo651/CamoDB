@@ -44,6 +44,7 @@
             }
             // Show the admin page
             function showAdminPage(){
+                setDatabaseSettings();
                 $allDatabases = getDatabasesFromHub();
                 $database = $_GET["database"] ?? null;
                 $collection = $_GET["collection"] ?? null;
@@ -87,8 +88,48 @@
                             echo "</div>";
                         }
                         if($database != null){
-                            // TODO show the settings for this database here
-                            
+                            $databaseConfig = file_get_contents("hub/$database/config.json") or throwError("Could not read database config file", true);
+                            $databaseConfig = json_decode($databaseConfig, true) or throwError("Could not decode database config file", true);
+                            echo "<div class='col-sm-6'>";
+                                echo "<h5 class='text-center'>Database Settings</h5>";
+                                echo "<table class='table table-striped'>";
+                                    echo "<thead>";
+                                        echo "<tr>";
+                                            echo "<th>Setting</th>";
+                                            echo "<th>Value</th>";
+                                        echo "</tr>";
+                                    echo "</thead>";
+                                    echo "<tbody>";
+                                        echo "<form class='form-horizontal' action='admin.php?database=$database' method='post'>";
+                                            echo "<tr>";
+                                                echo "<td>Database Name</td>";
+                                                echo "<td><input type='text' class='form-control' name='database_name' value='".$databaseConfig["name"]."'></td>";
+                                            echo "</tr>";
+                                            echo "<tr>";
+                                                echo "<td>Database Description</td>";
+                                                echo "<td><input type='text' class='form-control' name='database_description' value='".$databaseConfig["description"]."'></td>";
+                                            echo "</tr>";
+                                            echo "<tr>";
+                                                echo "<td>Require Authentication</td>";
+                                                echo "<td><input type='checkbox' class='form-check-input' name='database_requireAuthentication' value='1'".($databaseConfig["requireAuthentication"] == "true" ? " checked": "")."></td>";
+                                            echo "</tr>";
+                                            echo "<tr>";
+                                                echo "<td>Require Encryption</td>";
+                                                echo "<td><input type='checkbox' class='form-check-input' name='database_requireEncryption' value='1'".($databaseConfig["requireEncryption"] == "true" ? " checked": "")."></td>";
+                                            echo "</tr>";
+                                            echo "<tr>";
+                                                echo "<td>Auth Key Lifespan</td>";
+                                                echo "<td><input type='text' class='form-control' name='database_authKeyLifespanInMinutes' value='".$databaseConfig["authKeyLifespanInMinutes"]."'></td>";
+                                            echo "</tr>";
+                                            echo "<tr>";
+                                                echo "<td>Save Changes</td>";
+                                                echo "<input type='hidden' name='database' value='$database'>";
+                                                echo "<td><button type='submit' class='btn btn-default'>Save</button></td>";
+                                            echo "</tr>";
+                                        echo "</form>";
+                                    echo "</tbody>";
+                                echo "</table>";
+                            echo "</div>";
                         }
                     echo "</div>";
                     echo "<div class='row'>";
@@ -130,6 +171,23 @@
                         echo "</div>";
                     echo "</div>";
                 echo "</div>";
+            }
+            // Set database settings
+            function setDatabaseSettings(){
+                $database = $_POST["database"];
+                if($database == null)
+                    return;
+                $values = array("name", "description", "requireAuthentication", "requireEncryption", "authKeyLifespanInMinutes");
+                $databaseConfig = file_get_contents("hub/$database/config.json") or throwError("Could not read database config file", true);
+                $databaseConfig = json_decode($databaseConfig, true) or throwError("Could not decode database config file", true);
+                for($i = 0; $i < count($values); $i++){
+                    if ($values[$i] == "requireAuthentication" || $values[$i] == "requireEncryption")
+                        $_POST["database_".$values[$i]] = $_POST["database_".$values[$i]] == "1" ? "true" : "false";
+                    echo $values[$i] . " = " . $_POST["database_".$values[$i]] . " | ";
+                    $databaseConfig[$values[$i]] = $_POST["database_".$values[$i]];
+                }
+                $databaseConfig = json_encode($databaseConfig, JSON_PRETTY_PRINT) or throwError("Could not encode database config file", true);
+                file_put_contents("hub/$database/config.json", $databaseConfig) or throwError("Could not write database config file", true);
             }
             // Get the hub tree
             function getHubTree(){

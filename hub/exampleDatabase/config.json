@@ -1,0 +1,19 @@
+{
+    "name": "My database",
+    "description": "My database description",
+    "requireAuthentication": true,
+    "requireEncryption": false,
+    "authKeyLifespanInMinutes": 60,
+    "logging":{
+        "maxLogSizeInMB": 10,
+        "connections": true,
+        "readQueries": true,
+        "writeQueries": true,
+        "errors": true
+    },
+    "backup":{
+        "enabled": true,
+        "frequencyInHours": 24,
+        "backlogCount": 7
+    }
+}
