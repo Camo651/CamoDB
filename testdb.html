@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <script>
+            var url = "https://api.projectnodenium.com/testDatabase/index.php";
+            run();
+            async function run() {
+                var postData = JSON.stringify({
+                    "username": "myUname",
+                    "password": "123abc",
+                    "user":{
+                        "action": "create",
+                        "data":{
+                            "perms":2
+                        }
+                    }
+                });
+                console.log(postData);
+                var response = await fetch(url,{
+                    method: 'POST',
+                    body: postData,
+                });
+                var data = await response.text();
+                console.log(data);
+            }
+        </script>
+    </body>
+</html>

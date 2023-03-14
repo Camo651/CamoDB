@@ -5,13 +5,13 @@
     
     // Check if database already exists
     if(file_exists($path . $uid))
-        throwError('Database already exists for ' . $uid . '. Please try again', true, 5);
+        throwError('Database already exists for ' . $uid . '. Please try again', true, 5.0);
 
     // Create database directory
     if(!file_exists($path))
         mkdir($path) or throwError('Could not create general database directory', true, 5.1);
-    mkdir($path . '/' . $uid) or throwError('Could not create database for ' . $uid . '', true, 6);
-    mkdir($path . '/' . $uid . '/collections') or throwError('Could not create collections directory for ' . $uid . '', true, 7);
+    mkdir($path . '/' . $uid) or throwError('Could not create database for ' . $uid . '', true, 5.2);
+    mkdir($path . '/' . $uid . '/collections') or throwError('Could not create collections directory for ' . $uid . '', true, 5.3);
     
     // Create database configuration
     $config = array(
@@ -23,10 +23,20 @@
         'writable' => 1,
         'requireAuth' => 1,
         'apiKeyLifespan' => 3600,
+        'permissions' => array(
+            'read' => 0,
+            'write' => 1,
+            'delete' => 2,
+        ),
     );
 
-    $config = json_encode($config, JSON_PRETTY_PRINT) or throwError('Could not encode dbconfig.json for ' . $uid . '', true, 8);
-    file_put_contents($path . '/' . $uid . '/dbconfig.json', $config) or throwError('Could not write dbconfig.json for ' . $uid . '', true, 9);
+    // create dbconfig.json
+    $config = json_encode($config, JSON_PRETTY_PRINT) or throwError('Could not encode dbconfig.json for ' . $uid . '', true, 8.1);
+    file_put_contents($path . '/' . $uid . '/dbconfig.json', $config) or throwError('Could not write dbconfig.json for ' . $uid . '', true, 8.2);
+
+    //create keys.json and users.json
+    file_put_contents($path . '/' . $uid . '/keys.json', "[]") or throwError('Could not create keys.json for '. $uid .'', true, 8.3);
+    file_put_contents($path . '/' . $uid . '/users.json', "[]") or throwError('Could not create users.json for '. $uid .'', true, 8.4);
 
     // Show success message and return to index
     echo 'Successfully created database for ' . $uid . '. You can now manage this database from the <a href="index.php">Admin Hub</a>.';

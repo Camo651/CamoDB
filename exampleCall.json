@@ -1,0 +1,40 @@
+{
+    "username": "username",
+    "password": "password",
+    "calls":[
+        {
+            "path": "myDatabase/myCollection/myEntry",
+            "action": "set",
+            "data": {
+                "field1": "value1",
+                "field2": "value2"
+            }
+        },
+        {
+            "path": "myDatabase/myCollection/myEntry",
+            "action": "add",
+            "data": {
+                "arrayField": [
+                    "value1",
+                    "value2"
+                ]
+            }
+        },
+        {
+            "path": "myDatabase/myCollection/myEntry",
+            "action": "delete"
+        },
+        {
+            "path": "myDatabase/myCollection/myEntry",
+            "action": "get"
+        },
+        {
+            "path": "myDatabase/myCollection",
+            "action": "list"
+        },
+        {
+            "path": "myDatabase",
+            "action": "list"
+        }
+    ]
+}

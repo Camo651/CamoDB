@@ -1,46 +1,61 @@
 <?php
     session_start();
-?>
-<head>
-    <title>CamoDB</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-</head>
-<?php
-    include('system.php');
-
-    $username = $_POST['username'] ?? null;
-    $password = $_POST['password'] ?? null;
-    $loggedInUser = $_SESSION['user'] ?? null;
-    $config = file_get_contents('configuration.json') or throwError('Could not read configuration.json', true, 10);
-    $config = json_decode($config, true) or throwError('Could not decode configuration.json', true, 11);
-    $users = $config['admins'];
-
-    // check that the user is already logged in
-    if($loggedInUser != null){
-        if(isset($users[$loggedInUser])){
-            displayHub($loggedInUser);
-        } else {
-            throwError('Invalid username or password', false, 12.0);
-            unset($_SESSION['user']);
-            displayLogin();
+    include_once('system.php');
+    loadCORS();
+    $_POST = json_decode(file_get_contents("php://input"), true);
+    main();
+    function main(){       
+        // check if the user is trying to call an api
+        if(isset($_POST['calls'])){
+            include_once('call.php');
+            execute_calls($_POST['calls']);
+            return;
         }
-    // check that the user is trying to log in
-    }else if($username == null || $password == null ){
-        displayLogin();
-    // check that the user is trying to log in with valid credentials
-    } else {
-        if(isset($users[$username]) && $users[$username] == $password){
-            $_SESSION['user'] = $username;
-            displayHub($username);
-        } else {
-            throwError('Invalid username or password', false, 12.1);
+
+        if(isset($_POST['user'])){
+            include_once('user.php');
+            execute_user($_POST);
+            return;
+        }
+
+        displayHeader();
+
+        // check if the user is trying to log out
+        if(isset($_POST['logout'])){
             unset($_SESSION['user']);
+        }
+
+        $username = $_POST['username'] ?? null;
+        $password = $_POST['password'] ?? null;
+        $loggedInUser = $_SESSION['user'] ?? null;
+        $config = file_get_contents('configuration.json') or throwError('Could not read configuration.json', true, 10);
+        $config = json_decode($config, true) or throwError('Could not decode configuration.json', true, 11);
+        $users = $config['admins'];
+
+        // check that the user is already logged in
+        if($loggedInUser != null){
+            if(isset($users[$loggedInUser])){
+                displayHub($loggedInUser);
+            } else {
+                throwError('Invalid username or password', false, 12.0);
+                unset($_SESSION['user']);
+                displayLogin();
+            }
+        // check that the user is trying to log in
+        }else if($username == null || $password == null ){
             displayLogin();
+        // check that the user is trying to log in with valid credentials
+        } else {
+            if(isset($users[$username]) && $users[$username] == $password){
+                $_SESSION['user'] = $username;
+                displayHub($username);
+            } else {
+                throwError('Invalid username or password', false, 12.1);
+                unset($_SESSION['user']);
+                displayLogin();
+            }
         }
     }
-
     function deleteDatabase($uid){
         if(!is_dir(getDatabasePath() . '/' . $uid)){
             throwError('Database does not exist', true, 13.1);
@@ -48,7 +63,6 @@
         }
         rrmdir(getDatabasePath() . '/' . $uid);
     }
-
     function rrmdir($dir) { 
         if (is_dir($dir)) { 
           $objects = scandir($dir);
@@ -63,8 +77,6 @@
           rmdir($dir); 
         }
     }
-
-
     function displayHub($username){
         //route to other admin pages here
 
@@ -85,7 +97,6 @@
         displayDatabases($username);
         
     }
-
     function displayDatabases($username){
         
         echo '
@@ -94,6 +105,9 @@
                     <div class="col-md-12">
                         <h1>CamoDB</h1>
                         <p>Welcome, <b>'.$username.'</b>. Please select a database to manage.</p>
+                        <form method="post">
+                            <input type="submit" name="logout" value="Logout" class="btn btn-danger">
+                        </form>
                     </div>
                     <div class="col-md-12">
                         <a href="createDatabase.php" class="btn btn-success">Create Database</a>
@@ -148,8 +162,7 @@
                 </div>
             </div>
         ';
-    }
-    
+    }    
     function displayDeleteConfirm($uid){
         $config = getDatabaseConfig($uid);
         echo '
@@ -167,7 +180,6 @@
             </div>
         ';
     }
-
     function displayManager($uid){
         $config = getDatabaseConfig($uid);
         // display the manager as a form and handle its submission
@@ -238,7 +250,6 @@
         ';
         
     }
-
     function displayLogin(){
         echo '
             <div class="login">
@@ -250,5 +261,19 @@
             </div>
         ';
     }
-    
+    function displayHeader(){
+        echo '
+            <head>
+                <title>CamoDB</title>
+                <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+                <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+            </head>';
+    }
+    function loadCORS(){
+        $corsUrls = getAdminConfig('corsUrls');
+        foreach($corsUrls as $url){
+            header("Access-Control-Allow-Origin: $url");
+        }
+    }
 ?>
