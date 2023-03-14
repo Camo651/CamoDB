@@ -22,7 +22,6 @@
         'readable' => 1,
         'writable' => 1,
         'requireAuth' => 1,
-        'apiKeyLifespan' => 3600,
         'permissions' => array(
             'read' => 0,
             'write' => 1,
@@ -33,10 +32,6 @@
     // create dbconfig.json
     $config = json_encode($config, JSON_PRETTY_PRINT) or throwError('Could not encode dbconfig.json for ' . $uid . '', true, 8.1);
     file_put_contents($path . '/' . $uid . '/dbconfig.json', $config) or throwError('Could not write dbconfig.json for ' . $uid . '', true, 8.2);
-
-    //create keys.json and users.json
-    file_put_contents($path . '/' . $uid . '/keys.json', "[]") or throwError('Could not create keys.json for '. $uid .'', true, 8.3);
-    file_put_contents($path . '/' . $uid . '/users.json', "[]") or throwError('Could not create users.json for '. $uid .'', true, 8.4);
 
     // Show success message and return to index
     echo 'Successfully created database for ' . $uid . '. You can now manage this database from the <a href="index.php">Admin Hub</a>.';

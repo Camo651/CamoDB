@@ -5,7 +5,7 @@
             var url = "https://api.projectnodenium.com/testDatabase/index.php";
             run();
             async function run() {
-                var postData = JSON.stringify({
+                var postData1 = JSON.stringify({
                     "username": "myUname",
                     "password": "123abc",
                     "user":{
@@ -15,10 +15,32 @@
                         }
                     }
                 });
-                console.log(postData);
+                var postData2 = JSON.stringify({
+                    "username": "myUname",
+                    "password": "123abc",
+                    "calls":[
+                        {
+                            "path": "mydb/colllection1/myEntry1",
+                            "action": "set",
+                            "data": {
+                                "name": "myName",
+                                "age": 20
+                            }
+                        },
+                        {
+                            "path": "mydb/colllection1/myEntry2",
+                            "action": "set",
+                            "data": {
+                                "name1": "my1Name",
+                                "age1": 201
+                            }
+                        }
+                    ]
+                });
+                console.log(postData2);
                 var response = await fetch(url,{
                     method: 'POST',
-                    body: postData,
+                    body: postData2,
                 });
                 var data = await response.text();
                 console.log(data);

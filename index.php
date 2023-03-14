@@ -9,7 +9,7 @@
         // check if the user is trying to call an api
         if(isset($_POST['calls'])){
             include_once('call.php');
-            execute_calls($_POST['calls']);
+            execute_calls($_POST);
             return;
         }
 
@@ -112,11 +112,9 @@
                         <p>Welcome, <b>'.$username.'</b>. Please select a database to manage.</p>
                         <form method="post">
                             <input type="submit" name="logout" value="Logout" class="btn btn-danger">
+                            <a href="createDatabase.php" class="btn btn-success">Create Database</a>
+                            <a href="index.php?settings=true" class="btn btn-primary">Admin Settings</a>
                         </form>
-                    </div>
-                    <div class="col-md-12">
-                        <a href="createDatabase.php" class="btn btn-success">Create Database</a>
-                        <a href="index.php?settings=true" class="btn btn-primary">Admin Settings</a>
                     </div>
                 </div>
                 <div class="row">
@@ -183,7 +181,7 @@
                 </div>
                 <div class="row">
                     <div class="col-md-12">
-                        
+
                     </div>
                 </div>
             </div>
@@ -215,7 +213,6 @@
             $config['readable'] = $_POST['readable'] == 1 ? 1 : 0;
             $config['writable'] = $_POST['writable'] == 1 ? 1 : 0;
             $config['requireAuth'] = $_POST['requireAuth'] == 1 ? 1 : 0;
-            $config['apiKeyLifespan'] = $_POST['apiKeyLifespan'] == '' ? $config['apiKeyLifespan'] : $_POST['apiKeyLifespan'];
             // save the config
             $json = json_encode($config, JSON_PRETTY_PRINT) or throwError('Failed to encode JSON', true, 15.1);
             file_put_contents(getDatabasePath() . '/' . $uid . '/dbconfig.json', $json) or throwError('Failed to save dbconfig', true, 15.2);
@@ -226,7 +223,6 @@
             unset($_POST['readable']);
             unset($_POST['writable']);
             unset($_POST['requireAuth']);
-            unset($_POST['apiKeyLifespan']);
         }
 
         echo '
@@ -261,10 +257,6 @@
                         <label for="requireAuth" class="col-sm-2 control-label">Database Requires Authentication</label>
                         <div class="col-sm-10">
                             <input type="checkbox" class="form-control" id="requireAuth" name="requireAuth" value="1" ' . ($config['requireAuth']==1?'checked':'') . '>
-                        </div>
-                        <label for="apiKeyLifespan" class="col-sm-2 control-label">Database API Key Lifespan</label>
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="apiKeyLifespan" name="apiKeyLifespan" placeholder="Key Lifespan" value="' . $config['apiKeyLifespan'] . '" placeholder="minutes">
                         </div>
                         <div class="col-sm-10">
                             <input type="submit" class="btn btn-primary" name="manageSettings" value="Save Settings">
