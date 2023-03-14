@@ -64,20 +64,6 @@
         }
         rrmdir(getDatabasePath() . '/' . $uid);
     }
-    function rrmdir($dir) { 
-        if (is_dir($dir)) { 
-          $objects = scandir($dir);
-          foreach ($objects as $object) { 
-            if ($object != "." && $object != "..") { 
-              if (is_dir($dir. DIRECTORY_SEPARATOR .$object) && !is_link($dir."/".$object))
-                rrmdir($dir. DIRECTORY_SEPARATOR .$object);
-              else
-                unlink($dir. DIRECTORY_SEPARATOR .$object); 
-            } 
-          }
-          rmdir($dir); 
-        }
-    }
     function displayHub($username){
         //route to other admin pages here
 
@@ -144,7 +130,7 @@
             $config = getDatabaseConfig($database);
             echo '
                 <tr>
-                    <td>' . $config['name'] . '</td>
+                    <td>' . $config['uid'] . '</td>
                     <td>' . $config['info'] . '</td>
                     <td>' . $config['created'] . '</td>
                     <td>' . ($config['readable']==1?'true':'false') . '</td>
@@ -193,7 +179,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
-                        <p>Are you sure you want to delete the database <b>' . $config['name'] . '</b>?</p>
+                        <p>Are you sure you want to delete the database <b>' . $config['uid'] . '</b>?</p>
                         <b>WARNING: This action cannot be undone!</b>
                     </div>
                     <div class="col-md-12">
@@ -208,7 +194,7 @@
         $config = getDatabaseConfig($uid);
         // display the manager as a form and handle its submission
         if(isset($_POST['manageSettings'])){
-            $config['name'] = $_POST['name'] == '' ? $config['name'] : $_POST['name'];
+            $config['uid'] = $_POST['name'] == '' ? $config['uid'] : $_POST['name'];
             $config['info'] = $_POST['info'] == '' ? $config['info'] : $_POST['info'];
             $config['readable'] = $_POST['readable'] == 1 ? 1 : 0;
             $config['writable'] = $_POST['writable'] == 1 ? 1 : 0;
@@ -216,7 +202,9 @@
             // save the config
             $json = json_encode($config, JSON_PRETTY_PRINT) or throwError('Failed to encode JSON', true, 15.1);
             file_put_contents(getDatabasePath() . '/' . $uid . '/dbconfig.json', $json) or throwError('Failed to save dbconfig', true, 15.2);
-
+            if($config['uid'] != $uid){
+                rename(getDatabasePath() . '/' . $uid, getDatabasePath() . '/' . $config['uid']) or throwError('Failed to rename database', true, 15.3);
+            }
             unset($_POST['manageSettings']);
             unset($_POST['name']);
             unset($_POST['info']);
@@ -230,7 +218,7 @@
             <div class="row">
                 <div class="col-md-12">
                     <h1>Manage Database</h1>
-                    <p>Manage the settings for the database <b>' . $config['name'] . '</b>.</p>
+                    <p>Manage the settings for the database <b>' . $config['uid'] . '</b>.</p>
                     <a href="index.php" class="btn btn-primary">Back</a>
                 </div>
             </div>
@@ -240,7 +228,7 @@
                     <div class="form-group">
                         <label for="name" class="col-sm-2 control-label">Database Name</label>
                         <div class="col-sm-10">
-                            <input type="text" class="form-control" id="name" name="name" placeholder="Database Name" value="' . $config['name'] . '">
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Database Name" value="' . $config['uid'] . '">
                         </div>
                         <label for="info" class="col-sm-2 control-label">Database Description</label>
                         <div class="col-sm-10">

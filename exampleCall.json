@@ -22,19 +22,28 @@
         },
         {
             "path": "myDatabase/myCollection/myEntry",
-            "action": "delete"
+            "action": "delete",
+            "data":[]
+        },
+        {
+            "path": "myDatabase/myCollection/myEntry/field1",
+            "action": "get",
+            "data":[]
         },
         {
             "path": "myDatabase/myCollection/myEntry",
-            "action": "get"
+            "action": "get",
+            "data":[]
         },
         {
             "path": "myDatabase/myCollection",
-            "action": "list"
+            "action": "get",
+            "data":[]
         },
         {
             "path": "myDatabase",
-            "action": "list"
+            "action": "get",
+            "data":[]
         }
     ]
 }

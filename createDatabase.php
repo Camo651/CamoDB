@@ -16,7 +16,6 @@
     // Create database configuration
     $config = array(
         'uid' => $uid,
-        'name' => 'My New Database',
         'info' => 'This is a new database created by CamoDB. You can change the name and description of this database in the configuration file.',
         'created' => date('Y-m-d H:i:s'),
         'readable' => 1,
