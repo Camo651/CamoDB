@@ -2,9 +2,10 @@
     session_start();
     include_once('system.php');
     loadCORS();
+    if($_POST == null || $_POST == array())
     $_POST = json_decode(file_get_contents("php://input"), true);
     main();
-    function main(){       
+    function main(){
         // check if the user is trying to call an api
         if(isset($_POST['calls'])){
             include_once('call.php');
@@ -24,10 +25,9 @@
         if(isset($_POST['logout'])){
             unset($_SESSION['user']);
         }
-
-        $username = $_POST['username'] ?? null;
-        $password = $_POST['password'] ?? null;
-        $loggedInUser = $_SESSION['user'] ?? null;
+        $username = $_POST['username'];
+        $password = $_POST['password'];
+        $loggedInUser = $_SESSION['user'];
         $config = file_get_contents('configuration.json') or throwError('Could not read configuration.json', true, 10);
         $config = json_decode($config, true) or throwError('Could not decode configuration.json', true, 11);
         $users = $config['admins'];
@@ -43,6 +43,7 @@
             }
         // check that the user is trying to log in
         }else if($username == null || $password == null ){
+            throwError($username . ' ' . $password, false, 12.2);
             displayLogin();
         // check that the user is trying to log in with valid credentials
         } else {
@@ -93,6 +94,10 @@
             }
             return;
         }
+        if(isset($_GET['settings'])){
+            displaySettings();
+            return;
+        }
         
         displayDatabases($username);
         
@@ -111,6 +116,7 @@
                     </div>
                     <div class="col-md-12">
                         <a href="createDatabase.php" class="btn btn-success">Create Database</a>
+                        <a href="index.php?settings=true" class="btn btn-primary">Admin Settings</a>
                     </div>
                 </div>
                 <div class="row">
@@ -162,7 +168,27 @@
                 </div>
             </div>
         ';
-    }    
+    }
+    function displaySettings(){
+        echo '
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h1>CamoDB</h1>
+                        <p>Admin Settings</p>
+                    </div>
+                    <div class="col-md-12">
+                        <a href="index.php" class="btn btn-primary">Back</a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        
+                    </div>
+                </div>
+            </div>
+        ';
+    }
     function displayDeleteConfirm($uid){
         $config = getDatabaseConfig($uid);
         echo '

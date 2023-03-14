@@ -44,8 +44,7 @@
         exit();
     }
     function getAdminConfig($prop){
-        $path = "configuration.json";
-        $config = json_decode(file_get_contents($path), true) or returnError("invalid admin config", 500);
+        $config = json_decode(file_get_contents("configuration.json"), true) or returnError("invalid admin config", 500);
         return $config[$prop];
     }
 ?>

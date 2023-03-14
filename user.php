@@ -50,6 +50,14 @@
             returnError("dynamic authentication is disabled", 403);
         $uuidMap = getUuidMap();
         $uuid = uniqid();
+        while(isset($uuidMap[$uuid]))
+            $uuid = uniqid();
+        foreach($uuidMap as $user){
+            if($user == $username){
+                returnError("username already exists", 400);
+                return;
+            }
+        }
         $uuidMap[$uuid] = $username;
         file_put_contents("users/uuidMap.json", json_encode($uuidMap)) or returnError("unable to write uuid map", 500);
         $path = "users/users/$uuid.json";
