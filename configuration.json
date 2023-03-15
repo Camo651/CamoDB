@@ -3,8 +3,8 @@
         "camo":"123"
     },
     "databasePath":"db",
-    "requireAuth":true,
-    "allowDynamicAuth": true,
+    "requireAuth":1,
+    "allowDynamicAuth": 1,
     "corsUrls":[
         "*"
     ]

@@ -47,6 +47,11 @@
         $config = json_decode(file_get_contents("configuration.json"), true) or returnError("invalid admin config", 500);
         return $config[$prop];
     }
+    function setAdminConfig($prop, $value){
+        $config = json_decode(file_get_contents("configuration.json"), true) or returnError("invalid admin config", 500);
+        $config[$prop] = $value;
+        file_put_contents("configuration.json", json_encode($config)) or returnError("could not write admin config", 500);
+    }
     function rrmdir($dir) { 
         if (is_dir($dir)) { 
           $objects = scandir($dir);

@@ -154,6 +154,15 @@
         ';
     }
     function displaySettings(){
+        if(isset($_POST['saveSettings'])){
+            setAdminConfig('requireAuth', (isset($_POST['requireAuth']) && $_POST['requireAuth']=='1')?'1':'0');
+            setAdminConfig('allowDynamicAuth', (isset($_POST['allowDynamicAuth']) && $_POST['allowDynamicAuth']=='1')?'1':'0');
+            unset($_POST['allowDynamicAuth']);
+            unset($_POST['requireAuth']);
+            unset($_POST['saveSettings']);
+        }
+        $reqAuth = getAdminConfig('requireAuth');
+        $dynAuth = getAdminConfig('allowDynamicAuth');
         echo '
             <div class="container">
                 <div class="row">
@@ -166,9 +175,25 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-12">
-
-                    </div>
+                    <form method="post" action="index.php?settings=true">
+                        <div class="col-md-12">
+                            <label for="requireAuth">Require User Authentication</label>
+                            <input type="checkbox" name="requireAuth" id="requireAuth" value="1" class="form-check-input" ' . ($reqAuth==1?'checked':'') . '>
+                        </div>
+                        <div class="col-md-12">
+                            <label for="allowDynamicAuth">Allow New User Accounts</label>
+                            <input type="checkbox" name="allowDynamicAuth" id="allowDynamicAuth" value="1" class="form-check-input" ' . ($dynAuth==1?'checked':'') . '>
+                        </div>
+                        <div class="col-md-12">
+                            <input type="submit" name="saveSettings" value="Save Settings" class="btn btn-success">
+                        </div>
+                        <div class="col-md-12">
+                            <p><b>WARNING:</b> Changing these settings will affect all databases!</p>
+                            <br>
+                            <p>Change admin users and CORS headers in the <code>configuration.json</code> file.</p>
+                            <p>See more information about the configuration file on the project <a href="https://github.com/Camo651/CamoDB" target="_blank">Github Page</a>.</p>
+                        </div>
+                    </form>
                 </div>
             </div>
         ';

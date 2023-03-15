@@ -95,7 +95,6 @@
         }
         returnError('Invalid action', 400);
     }
-    
     function getDirectories($dbid, $collection = null, $entry = null){
         $path = getDatabasePath() . '/' . $dbid;
         if($collection != null)

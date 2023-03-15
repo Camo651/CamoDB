@@ -33,5 +33,5 @@
     file_put_contents($path . '/' . $uid . '/dbconfig.json', $config) or throwError('Could not write dbconfig.json for ' . $uid . '', true, 8.2);
 
     // Show success message and return to index
-    echo 'Successfully created database for ' . $uid . '. You can now manage this database from the <a href="index.php">Admin Hub</a>.';
+    echo '<h6>Successfully created database for ' . $uid . '. You can now manage this database from the <a href="index.php" class="btn btn-primary">Admin Hub</a></h6>.';
 ?>
