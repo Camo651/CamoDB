@@ -29,7 +29,7 @@
         $returnData = array(
             'status' => $code,
             'message' => $message,
-            'data' => array()
+            'data' => error_get_last()
         );
         echo json_encode($returnData);
         exit();
@@ -65,5 +65,20 @@
           }
           rmdir($dir); 
         }
+    }
+    function file_force_contents($dir, $contents){
+        $parts = explode('/', $dir) or returnError("could not force directory explode", 500);
+        $file = array_pop($parts) or returnError("could not force directory pop", 500);
+        $dir = '';
+        foreach($parts as $part){
+            if($dir == '')
+                $dir = $part;
+            else
+                $dir .= "/$part";
+            if(!is_dir($dir)){
+                mkdir($dir) or returnError("could not force directory ".$dir, 500);
+            }
+        }
+        return file_put_contents("$dir/$file", $contents) or returnError("could not force file", 500);
     }
 ?>

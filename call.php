@@ -8,9 +8,7 @@
         // execute the calls
         $result = array();
         foreach($calls as $call){
-            $executionData = execute_call($call, $username, $password);
-            if($executionData != null)
-                $result[] = $executionData;
+            $result[] = execute_singleCall($call, $username, $password);
         }
         returnSuccess($result);
     }
@@ -19,37 +17,37 @@
         $readable = $dbConfig['readable'];
         $writable = $dbConfig['writable'];
         $permissions = $dbConfig['permissions'];
-        if($requireAuth == 1){
-            if($username == null || $password == null)
-                returnError('This database requires authentication', 401);
-            if(!authenticateUser($username, $password))
-                returnError('Invalid username or password', 401);
-            if($permissions == null)
-                returnError('This database has no permissions', 500);
-            $userPerms = getUserPermissions(getUUID($username));
-            switch($action){
-                case 'get':
-                case 'query':
-                    if($readable == 0)
-                        returnError('This database is not readable', 403);
-                    if($permissions['read'] > $userPerms)
-                        returnError('You do not have permission to read from this database', 403);
-                    break;
-                case 'set':
-                case 'add':
-                    if($writable == 0)
-                        returnError('This database is not writable', 403);
-                    if($permissions['write'] > $userPerms)
-                        returnError('You do not have permission to write to this database', 403);
-                    break;
-                case 'delete':
-                    if($permissions['delete'] > $userPerms)
-                        returnError('You do not have permission to delete from this database', 403);
-                    break;
-            }
+        if($requireAuth != 1)
+            return;
+        if($username == null || $password == null)
+            returnError('This database requires authentication', 401);
+        if(!authenticateUser($username, $password))
+            returnError('Invalid username or password', 401);
+        if($permissions == null)
+            returnError('This database has no permissions', 500);
+        $userPerms = getUserPermissions(getUUID($username));
+        switch($action){
+            case 'get':
+            case 'query':
+                if($readable == 0)
+                    returnError('This database is not readable', 403);
+                if($permissions['read'] > $userPerms)
+                    returnError('You do not have permission to read from this database', 403);
+                break;
+            case 'set':
+            case 'add':
+                if($writable == 0)
+                    returnError('This database is not writable', 403);
+                if($permissions['write'] > $userPerms)
+                    returnError('You do not have permission to write to this database', 403);
+                break;
+            case 'delete':
+                if($permissions['delete'] > $userPerms)
+                    returnError('You do not have permission to delete from this database', 403);
+                break;
         }
     }
-    function execute_call($call, $username, $password): mixed{
+    function execute_singleCall($call, $username, $password){
         $path = $call['path'];
         $action = $call['action'];
         $data = $call['data'];
@@ -65,7 +63,7 @@
         if($dbConfig == null)
             returnError('Cannot find the dbconfig', 404);
         checkPermissions($dbConfig, $action, $username, $password);
-        
+
         //based on the action specified, execute the call
         switch($action){
             case 'get':
@@ -96,9 +94,9 @@
         returnError('Invalid action', 400);
     }
     function getDirectories($dbid, $collection = null, $entry = null){
-        $path = getDatabasePath() . '/' . $dbid;
+        $path = getDatabasePath() . '/' . $dbid . '/collections';
         if($collection != null)
-            $path .= '/collections/' . $collection;
+            $path .= '/'.$collection;
         if($entry != null){
             $path .= '/' . $entry . '.json';
             if(!file_exists($path))
@@ -121,40 +119,46 @@
         foreach($scan as $file){
             if($file == '.' || $file == '..')
                 continue;
-            if(is_dir($path . '/' . $file))
-                $result[] = $file;
+            if(is_file($path . '/' . $file))
+                $file = substr($file, 0, -5); //remove .json from the end of the file name
+            $result[] = $file;
         }
         return $result;
     }
-    function getKvp($dbid, $collection, $entry, $key): mixed{
+    function getKvp($dbid, $collection, $entry, $key){
         $path = getDatabasePath() . '/' . $dbid . '/collections/' . $collection . '/' . $entry . '.json';
         if(!file_exists($path))
             returnError('Entry does not exist', 404);
         $json = file_get_contents($path) or returnError('Could not read entry', 500);
         $json = json_decode($json, true) or returnError('Could not decode entry', 500);
+        if($key == '*')
+            return $json;
         if(!array_key_exists($key, $json))
             returnError('Key does not exist', 404);
         return $json[$key];
     }
-    function setKvp($dbid, $collection, $entry, $data): mixed{
-        $path = getDatabasePath() . '/' . $dbid . '/collections/' . $collection . '/' . $entry . '.json';
-        if(!file_exists($path))
-            returnError('Entry does not exist', 404);
-        $json = file_get_contents($path) or returnError('Could not read entry', 500);
-        $json = json_decode($json, true) or returnError('Could not decode entry', 500);
+    function setKvp($dbid, $collection, $entry, $data){
+        $path = (getDatabasePath() . '/' . $dbid . '/collections/' . $collection . '/' . $entry . '.json');
+        $path = stripcslashes($path);
+        $json = array();
+        if(file_exists($path)){
+            $json = file_get_contents($path) or returnError('Could not read entry', 500);
+            $json = json_decode($json, true) or returnError('Could not decode entry', 500);
+        }
         foreach($data as $key => $value){
             $json[$key] = $value;
         }
         $json = json_encode($json, JSON_PRETTY_PRINT) or returnError('Could not encode entry', 500);
-        file_put_contents($path, $json) or returnError('Could not write entry', 500);
+        file_force_contents($path, $json) or returnError('Could not write entry '.$path, 500);
         return $json;
     }
-    function addKvp($dbid, $collection, $entry, $data): mixed{
+    function addKvp($dbid, $collection, $entry, $data){
         $path = getDatabasePath() . '/' . $dbid . '/collections/' . $collection . '/' . $entry . '.json';
-        if(!file_exists($path))
-            returnError('Entry does not exist', 404);
-        $json = file_get_contents($path) or returnError('Could not read entry', 500);
-        $json = json_decode($json, true) or returnError('Could not decode entry', 500);
+        $json = array();
+        if(file_exists($path)){
+            $json = file_get_contents($path) or returnError('Could not read entry', 500);
+            $json = json_decode($json, true) or returnError('Could not decode entry', 500);
+        }
         foreach($data as $key => $value){
             if(array_key_exists($key, $json)){
                 foreach($value as $subkey => $subvalue){
@@ -165,10 +169,10 @@
             }
         }
         $json = json_encode($json, JSON_PRETTY_PRINT) or returnError('Could not encode entry', 500);
-        file_put_contents($path, $json) or returnError('Could not write entry', 500);
+        file_force_contents($path, $json) or returnError('Could not write entry', 500);
         return $json;
     }
-    function deleteKvp($dbid, $collection, $entry, $key): mixed{
+    function deleteKvp($dbid, $collection, $entry, $key){
         $path = getDatabasePath() . '/' . $dbid . '/collections/' . $collection . '/' . $entry . '.json';
         if(!file_exists($path))
             returnError('Entry does not exist', 404);
@@ -178,7 +182,7 @@
             returnError('Key does not exist', 404);
         unset($json[$key]);
         $json = json_encode($json, JSON_PRETTY_PRINT) or returnError('Could not encode entry', 500);
-        file_put_contents($path, $json) or returnError('Could not write entry', 500);
+        file_force_contents($path, $json) or returnError('Could not write entry', 500);
         return $json;
     }
     function query($token, $caseSensitive, $dbid, $collection = null, $entry = null){

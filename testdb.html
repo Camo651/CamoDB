@@ -37,10 +37,36 @@
                         }
                     ]
                 });
-                console.log(postData1);
+                var postData3 = JSON.stringify({
+                    "username": "myUname",
+                    "password": "123abc",
+                    "calls":[
+                        {
+                            "path": "mydb/colllection1/myEntry1",
+                            "action": "get",
+                            "data": []
+                        },
+                        {
+                            "path": "mydb/colllection1/myEntry2/*",
+                            "action": "get",
+                            "data": []
+                        },
+                        {
+                            "path": "mydb/colllection1",
+                            "action": "get",
+                            "data": []
+                        },
+                        {
+                            "path": "mydb",
+                            "action": "get",
+                            "data": []
+                        }
+                    ]
+                });
+                console.log(postData3);
                 var response = await fetch(url,{
                     method: 'POST',
-                    body: postData1,
+                    body: postData3,
                 });
                 var data = await response.text();
                 console.log(data);

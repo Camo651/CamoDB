@@ -42,7 +42,8 @@
         $path = "users/users/$uuid.json";
         if(!file_exists($path))
             return false;
-        $user = json_decode(file_get_contents($path), true);
+        $user = file_get_contents($path) or returnError("invalid user file", 500);
+        $user = json_decode($user, true) or returnError("invalid user json", 500);
         return $user['password'] == $password;
     }
     function createUser($username, $password, $perms){
@@ -94,7 +95,7 @@
         file_put_contents($path, json_encode($user)) or returnError("unable to write user", 500);
         returnSuccess($user);
     }
-    function getUUID($username): mixed{
+    function getUUID($username){
         $uuidMap = getUuidMap();
         foreach($uuidMap as $uuid => $user){
             if($user == $username){
@@ -103,13 +104,13 @@
         }
         return null;
     }
-    function getUsername($uuid): mixed{
+    function getUsername($uuid){
         $uuidMap = getUuidMap();
         if(!isset($uuidMap[$uuid]))
             return null;
         return $uuidMap[$uuid];
     }
-    function getUuidMap(): array{
+    function getUuidMap(){
         $uuidMap = file_get_contents("users/uuidMap.json") or returnError("unable to read uuid map", 500);
         $uuidMap = json_decode($uuidMap, true) or returnError("invalid uuid map", 500);
         return $uuidMap;

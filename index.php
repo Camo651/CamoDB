@@ -227,9 +227,9 @@
             $config['readable'] = $_POST['readable'] == 1 ? 1 : 0;
             $config['writable'] = $_POST['writable'] == 1 ? 1 : 0;
             $config['requireAuth'] = $_POST['requireAuth'] == 1 ? 1 : 0;
-            $config['permissions']['read'] = $_POST['readable'] == '' ? $config['permissions']['read'] : $_POST['readable'];
-            $config['permissions']['write'] = $_POST['writable'] == '' ? $config['permissions']['write'] : $_POST['writable'];
-            $config['permissions']['delete'] = $_POST['delete'] == '' ? $config['permissions']['delete'] : $_POST['delete'];
+            $config['permissions']['read'] = $_POST['rPerm'] == '' ? $config['permissions']['read'] : $_POST['rPerm'];
+            $config['permissions']['write'] = $_POST['wPerm'] == '' ? $config['permissions']['write'] : $_POST['wPerm'];
+            $config['permissions']['delete'] = $_POST['dPerm'] == '' ? $config['permissions']['delete'] : $_POST['dPerm'];
 
             // save the config
             $json = json_encode($config, JSON_PRETTY_PRINT) or throwError('Failed to encode JSON', true, 15.1);
@@ -243,9 +243,9 @@
             unset($_POST['readable']);
             unset($_POST['writable']);
             unset($_POST['requireAuth']);
-            unset($_POST['read']);
-            unset($_POST['write']);
-            unset($_POST['delete']);
+            unset($_POST['rPerm']);
+            unset($_POST['wPerm']);
+            unset($_POST['dPerm']);
         }
 
         echo '
@@ -295,19 +295,19 @@
                               <div class="input-group-prepend">
                                 <span class="input-group-text" id="basic-addon1">Min Read Level</span>
                               </div>
-                            <input type="text" class="form-control" id="readable" name="readable" placeholder="1" value="' . $config['permissions']['read'] . '">
+                            <input type="text" class="form-control" id="rPerm" name="rPerm" placeholder="1" value="' . $config['permissions']['read'] . '">
                         </div>
                         <div class="input-group mb-3">
                               <div class="input-group-prepend">
                                 <span class="input-group-text" id="basic-addon1">Min Write Level</span>
                               </div>
-                            <input type="text" class="form-control" id="writable" name="writable" placeholder="1" value="' . $config['permissions']['write'] . '">
+                            <input type="text" class="form-control" id="wPerm" name="wPerm" placeholder="1" value="' . $config['permissions']['write'] . '">
                         </div>
                         <div class="input-group mb-3">
                               <div class="input-group-prepend">
                                 <span class="input-group-text" id="basic-addon1">Min Delete Level</span>
                               </div>
-                            <input type="text" class="form-control" id="delete" name="delete" placeholder="1" value="' . $config['permissions']['delete'] . '">
+                            <input type="text" class="form-control" id="dPerm" name="dPerm" placeholder="1" value="' . $config['permissions']['delete'] . '">
                         </div>
                         <div class="input-group mb-3">
                             <input type="submit" class="btn btn-primary" name="manageSettings" value="Save Settings">
