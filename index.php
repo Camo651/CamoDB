@@ -1,6 +1,8 @@
 <?php
     session_start();
-    include_once('system.php');
+    include('system.php');
+    include('user.php');
+    include('call.php');
     loadCORS();
     if($_POST == null || $_POST == array())
     $_POST = json_decode(file_get_contents("php://input"), true);
@@ -8,13 +10,11 @@
     function main(){
         // check if the user is trying to call an api
         if(isset($_POST['calls'])){
-            include_once('call.php');
             execute_calls($_POST);
             return;
         }
 
         if(isset($_POST['user'])){
-            include_once('user.php');
             execute_user($_POST);
             return;
         }
@@ -59,7 +59,6 @@
     }
     function deleteDatabase($uid){
         if(!is_dir(getDatabasePath() . '/' . $uid)){
-            throwError('Database does not exist', true, 13.1);
             return;
         }
         rrmdir(getDatabasePath() . '/' . $uid);
@@ -84,6 +83,10 @@
             displaySettings();
             return;
         }
+        if(isset($_GET['users'])){
+            displayUsers();
+            return;
+        }
         
         displayDatabases($username);
         
@@ -100,6 +103,7 @@
                             <input type="submit" name="logout" value="Logout" class="btn btn-danger">
                             <a href="createDatabase.php" class="btn btn-success">Create Database</a>
                             <a href="index.php?settings=true" class="btn btn-primary">Admin Settings</a>
+                            <a href="index.php?users=true" class="btn btn-primary">Users</a>
                         </form>
                     </div>
                 </div>
@@ -139,7 +143,6 @@
                     <td>' . $config['apiKeyLifespan'] . '</td>
                     <td>
                         <a href="index.php?manageBase=' . $config['uid'] . '" class="btn btn-primary">Manage</a>
-                        <a href="index.php?deleteBase=' . $config['uid'] . '" class="btn btn-danger">Delete</a>
                     </td>
                 </tr>
             ';
@@ -209,7 +212,7 @@
                     </div>
                     <div class="col-md-12">
                         <a href="index.php?deleteBase=' . $uid . '&confirm=true" class="btn btn-success">Yes</a>
-                        <a href="index.php" class="btn btn-danger">No</a>
+                        <a href="index.php?manageBase=' . $uid . '" class="btn btn-danger">No</a>
                     </div>
                 </div>
             </div>
@@ -224,6 +227,10 @@
             $config['readable'] = $_POST['readable'] == 1 ? 1 : 0;
             $config['writable'] = $_POST['writable'] == 1 ? 1 : 0;
             $config['requireAuth'] = $_POST['requireAuth'] == 1 ? 1 : 0;
+            $config['permissions']['read'] = $_POST['readable'] == '' ? $config['permissions']['read'] : $_POST['readable'];
+            $config['permissions']['write'] = $_POST['writable'] == '' ? $config['permissions']['write'] : $_POST['writable'];
+            $config['permissions']['delete'] = $_POST['delete'] == '' ? $config['permissions']['delete'] : $_POST['delete'];
+
             // save the config
             $json = json_encode($config, JSON_PRETTY_PRINT) or throwError('Failed to encode JSON', true, 15.1);
             file_put_contents(getDatabasePath() . '/' . $uid . '/dbconfig.json', $json) or throwError('Failed to save dbconfig', true, 15.2);
@@ -236,6 +243,9 @@
             unset($_POST['readable']);
             unset($_POST['writable']);
             unset($_POST['requireAuth']);
+            unset($_POST['read']);
+            unset($_POST['write']);
+            unset($_POST['delete']);
         }
 
         echo '
@@ -251,28 +261,57 @@
                 <form class="form-horizontal" action="index.php?manageBase=' . $config['uid'] . '" method="post">
                     <input type="hidden" name="manageSettings" value="true">
                     <div class="form-group">
-                        <label for="name" class="col-sm-2 control-label">Database Name</label>
-                        <div class="col-sm-10">
+                        <div class="input-group mb-3">
+                              <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">Datebase Name</span>
+                              </div>
                             <input type="text" class="form-control" id="name" name="name" placeholder="Database Name" value="' . $config['uid'] . '">
                         </div>
-                        <label for="info" class="col-sm-2 control-label">Database Description</label>
-                        <div class="col-sm-10">
+                        <div class="input-group mb-3">
+                              <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">Database Info</span>
+                              </div>
                             <input type="text" class="form-control" id="info" name="info" placeholder="Database Description" value="' . $config['info'] . '">
                         </div>
-                        <label for="readable" class="col-sm-2 control-label">Database Readable</label>
-                        <div class="col-sm-10">
-                            <input type="checkbox" class="form-control" id="readable" name="readable" value="1" ' . ($config['readable']==1?'checked':'') . '>
+                        <div class="input-group mb-3">
+                              <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">Readable?</span>
+                              </div>
+                            <input type="checkbox" class="form-check-input" id="readable" name="readable" value="1" ' . ($config['readable']==1?'checked':'') . '>
                         </div>
-                        <label for="writable" class="col-sm-2 control-label">Database Writable</label>
-                        <div class="col-sm-10">
-                            <input type="checkbox" class="form-control" id="writable" name="writable" value="1" ' . ($config['writable']==1?'checked':'') . '>
+                        <div class="input-group mb-3">
+                              <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">Writeable?</span>
+                              </div>
+                            <input type="checkbox" class="form-check-input" id="writable" name="writable" value="1" ' . ($config['writable']==1?'checked':'') . '>
                         </div>
-                        <label for="requireAuth" class="col-sm-2 control-label">Database Requires Authentication</label>
-                        <div class="col-sm-10">
-                            <input type="checkbox" class="form-control" id="requireAuth" name="requireAuth" value="1" ' . ($config['requireAuth']==1?'checked':'') . '>
+                        <div class="input-group mb-3">
+                              <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">Require Auth?</span>
+                              </div>
+                            <input type="checkbox" class="form-check-input" id="requireAuth" name="requireAuth" value="1" ' . ($config['requireAuth']==1?'checked':'') . '>
                         </div>
-                        <div class="col-sm-10">
+                        <div class="input-group mb-3">
+                              <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">Min Read Level</span>
+                              </div>
+                            <input type="text" class="form-control" id="readable" name="readable" placeholder="1" value="' . $config['permissions']['read'] . '">
+                        </div>
+                        <div class="input-group mb-3">
+                              <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">Min Write Level</span>
+                              </div>
+                            <input type="text" class="form-control" id="writable" name="writable" placeholder="1" value="' . $config['permissions']['write'] . '">
+                        </div>
+                        <div class="input-group mb-3">
+                              <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1">Min Delete Level</span>
+                              </div>
+                            <input type="text" class="form-control" id="delete" name="delete" placeholder="1" value="' . $config['permissions']['delete'] . '">
+                        </div>
+                        <div class="input-group mb-3">
                             <input type="submit" class="btn btn-primary" name="manageSettings" value="Save Settings">
+                            <a href="index.php?deleteBase=' . $config['uid'] . '" class="btn btn-danger">Delete</a>
                         </div>
                     </div>
                 </form>
@@ -300,6 +339,50 @@
                 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
                 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
             </head>';
+    }
+    function displayUsers(){
+        $users = getUuidMap();
+        echo '
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h1>Manage Users</h1>
+                        <p>Manage the users of the database.</p>
+                        <a href="index.php" class="btn btn-primary">Back</a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>UUID</th>
+                                    <th>Username</th>
+                                    <th>Permissions</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+        ';
+        foreach($users as $uuid => $user){
+            echo '
+                <tr>
+                    <td>' . $uuid . '</td>
+                    <td>' . $user . '</td>
+                    <td>' . getUserPermissions($uuid) . '</td>
+                    <td>
+                        <a href="" class="btn btn-secondary">Unavailable</a>
+                    </td>
+                </tr>
+            ';
+        }
+        echo '
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        ';
     }
     function loadCORS(){
         $corsUrls = getAdminConfig('corsUrls');

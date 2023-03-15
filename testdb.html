@@ -37,10 +37,10 @@
                         }
                     ]
                 });
-                console.log(postData2);
+                console.log(postData1);
                 var response = await fetch(url,{
                     method: 'POST',
-                    body: postData2,
+                    body: postData1,
                 });
                 var data = await response.text();
                 console.log(data);

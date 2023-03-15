@@ -109,7 +109,7 @@
             return null;
         return $uuidMap[$uuid];
     }
-    function getUuidMap(){
+    function getUuidMap(): array{
         $uuidMap = file_get_contents("users/uuidMap.json") or returnError("unable to read uuid map", 500);
         $uuidMap = json_decode($uuidMap, true) or returnError("invalid uuid map", 500);
         return $uuidMap;
