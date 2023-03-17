@@ -1,6 +1,6 @@
 {
     "admins":{
-        "camo":"123"
+        "admin":"1234"
     },
     "databasePath":"db",
     "requireAuth":1,

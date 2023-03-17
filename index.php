@@ -9,12 +9,12 @@
     main();
     function main(){
         // check if the user is trying to call an api
-        if(isset($_POST['calls'])){
+        if(isset($_POST['CALLS'])){
             execute_calls($_POST);
             return;
         }
 
-        if(isset($_POST['user'])){
+        if(isset($_POST['USER'])){
             execute_user($_POST);
             return;
         }

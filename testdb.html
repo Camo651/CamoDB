@@ -5,17 +5,20 @@
             var url = "https://api.projectnodenium.com/testDatabase/index.php";
             run();
             async function run() {
-                var postData1 = JSON.stringify({
-                    "username": "myUname",
-                    "password": "123abc",
-                    "user":{
-                        "action": "create",
-                        "data":{
-                            "perms":2
+                var postData1 = JSON.stringify(
+                    {
+                        "username": "myUname",
+                        "password": "123abc",
+                        "user":{
+                            "action": "create",
+                            "data":{
+                                "perms":2
+                            }
                         }
                     }
-                });
-                var postData2 = JSON.stringify({
+                );
+                var postData2 = JSON.stringify(
+                {
                     "username": "myUname",
                     "password": "123abc",
                     "calls":[
@@ -36,7 +39,8 @@
                             }
                         }
                     ]
-                });
+                }
+                );
                 var postData3 = JSON.stringify({
                     "username": "myUname",
                     "password": "123abc",
