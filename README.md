@@ -154,7 +154,7 @@ These users should only be used in an application to authenticate API calls. Do 
 
 ---
 ## API
-The API is the main way of accessing the database. It is a RESTful API that uses JSON to communicate. All requests must be made to the `index.php` in the root of the database using only POST requests.
+The API is the main way of accessing the database. It is a REST API that uses JSON to communicate. All requests must be made to the `index.php` in the root of the database using only POST requests.
 
 
 There a 2 main types of requests that can be made to the API:
